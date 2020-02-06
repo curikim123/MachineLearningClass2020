@@ -1,0 +1,527 @@
+---
+title: "Machine Learning HW 1"
+author: "Curi Kim"
+date: "2/5/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# ISL: 3.7
+
+## Problem 5
+
+
+
+
+## Problem 6 
+
+**According to 3.4, the least square line minimizes residual sums of square by choosing the appropriate ${\beta_0}$ and ${\beta_1}$. Therefore, it passes through line ($\bar{y}$,$\bar{x}$)**
+
+**$\hat{\beta_0}= \bar{y} - \hat{\beta_1} * \bar{x}$**
+
+
+## Problem 9
+
+### a. 
+
+```{r Auto, echo=TRUE, eval=TRUE}
+
+
+load("/Users/curikim/Downloads/ISLR 2/data/Auto.rda")
+plot(Auto)
+
+```
+
+### b. 
+
+```{r Auto2, echo=TRUE, eval=TRUE}
+
+new_Auto <- Auto
+new_Auto$name <- NULL
+cor(new_Auto)
+
+```
+
+### c. 
+
+```{r Auto3, echo=TRUE, eval=TRUE}
+
+mlr1 <- lm(mpg~ ., data= new_Auto)
+summary(mlr1)
+
+```
+
+**i. Yes, the p-value for the F statistics is less than 0.05 so we can reject the null hypothesis that none of the predictors are associated with the response variable.**
+
+**ii. Displacement, weight, year, origin**
+
+**iii. Holding all other variables constant, 1 year increase leads to a 0.75  increase in mpg.**
+
+### d. 
+
+```{r Auto4, echo=TRUE, eval=TRUE}
+
+plot(mlr1)
+
+```
+
+**The residual vs fitted  plot is not linear, suggesting outliers. Dot 14 has a high leverage.**
+
+
+### e. 
+
+```{r Auto5, echo=TRUE, eval=TRUE}
+
+mlr2 <- lm(mpg~.*.,data=new_Auto)
+summary(mlr2)
+
+
+```
+
+**Only displacement:year, acclaration:year, acceleration:origin are statistically significant.** 
+
+### f. 
+
+```{r Auto6, echo=TRUE, eval=TRUE}
+
+mlr3 <- lm(mpg~acceleration+I(sqrt(acceleration)),data = new_Auto)
+summary(mlr3)
+
+mlr4 <- lm(mpg~acceleration+I(acceleration^2),data = new_Auto)
+summary(mlr4)
+
+```
+
+**Transforming the acceleration variable were more statiscally significant with the outcome.**
+
+## Problem 15
+
+### a.
+
+```{r Boston, echo=TRUE, eval=TRUE}
+library (MASS)
+Boston
+
+slr.zn <- lm(crim~zn, data=Boston)
+slr.indus <- lm(crim~indus, data=Boston)
+slr.chas <- lm(crim~chas, data=Boston)
+slr.nox <- lm(crim~nox, data=Boston)
+slr.rm <- lm(crim~rm, data=Boston)
+slr.age <- lm(crim~age, data=Boston)
+slr.dis <- lm(crim~dis, data=Boston)
+slr.rad <- lm(crim~rad, data=Boston)
+slr.tax <- lm(crim~tax, data=Boston)
+slr.ptratio <- lm(crim~ptratio, data=Boston)
+slr.black <- lm(crim~black, data=Boston)
+slr.lstat <- lm(crim~lstat, data=Boston)
+slr.medv <- lm(crim~medv, data=Boston)
+summary(slr.zn)
+summary(slr.indus)
+summary(slr.chas)
+summary(slr.nox)
+summary(slr.rm)
+summary(slr.age)
+summary(slr.dis)
+summary(slr.rad)
+summary(slr.tax)
+summary(slr.ptratio)
+summary(slr.black)
+summary(slr.lstat)
+summary(slr.medv)
+
+plot(Boston)
+
+```
+
+**All the variables except chas were statistically significant.**
+
+### b. 
+
+```{r Boston2 , echo=TRUE, eval=TRUE}
+
+slr_Boston <- lm(crim~ ., data=Boston)
+summary(slr_Boston)
+plot(slr_Boston)
+
+```
+
+**The variables that are statistically significant with crime are distance to employment centers, accesibility to radial highways, proportion of blacks, median value of homes, and proportion of residential land zoned for lots.** 
+
+### c. 
+
+```{r Boston3, echo=TRUE, eval=TRUE}
+
+y_axis <- coef(slr_Boston)[2:14]
+x_axis <- c(coef(slr.age)[2], coef(slr.black)[2], coef(slr.chas)[2], coef(slr.dis)[2], coef(slr.indus)[2], coef(slr.lstat)[2], coef(slr.medv)[2],  coef(slr.nox)[2],  coef(slr.ptratio)[2],  coef(slr.rad)[2],  coef(slr.rm)[2],  coef(slr.tax)[2],  coef(slr.zn)[2])
+
+comb <- data.frame(x_axis, y_axis)
+plot(comb, main="Univariate vs multiple regression coefficient", xlab="Simple regression coefficient", ylab="Multiple regression coefficient")
+
+```
+
+**Results are different for univariate vs multiple regression coefficient.**
+
+### d. 
+
+```{r Boston4, echo=TRUE, eval=TRUE}
+
+slr.age1 <- lm(crim~age+I(age^2)+I(age^3),data = Boston)
+slr.black1 <- lm(crim~black+I(black^2)+I(black^3),data = Boston)
+slr.chas1 <- lm(crim~+I(chas^2)+I(chas^3),data = Boston)
+slr.dis1 <- lm(crim~dis+I(dis^2)+I(dis^3),data = Boston)
+slr.indus1 <- lm(crim~indus+I(indus^2)+I(indus^3),data = Boston)
+slr.lstat1 <- lm(crim~lstat+I(lstat^2)+I(lstat^3),data = Boston)
+slr.medv1 <- lm(crim~medv+I(medv^2)+I(medv^3),data = Boston)
+slr.nox1 <- lm(crim~nox+I(nox^2)+I(nox^3),data = Boston)
+slr.ptratio1 <- lm(crim~ptratio+I(ptratio^2)+I(ptratio^3),data = Boston)
+slr.rad1 <- lm(crim~rad+I(rad^2)+I(rad^3),data = Boston)
+slr.rm1 <- lm(crim~rm+I(rm^2)+I(rm^3),data = Boston)
+slr.tax1 <- lm(crim~tax+I(tax^2)+I(tax^3),data = Boston)
+slr.zn1 <- lm(crim~zn+I(zn^2)+I(zn^3),data = Boston)
+summary(slr.age1)
+summary(slr.black1)
+summary(slr.chas1)
+summary(slr.dis1)
+summary(slr.indus1)
+summary(slr.lstat1)
+summary(slr.medv1)
+summary(slr.nox1)
+summary(slr.ptratio1)
+summary(slr.rad1)
+summary(slr.rm1)
+summary(slr.tax1)
+summary(slr.zn1)
+
+```
+
+**Evidence of non-linear relations for ptratio,  medv, indus, dis, nox**
+
+# ISL: 4.7.
+
+## Problem 1
+
+
+! [Image](/Users/curikim/Downloads/20200205_192431.jpg)
+
+## Problem 8
+
+**For K=1, there is only one class, which means that there would be no training error. Since the  average error rate was stated as 18%, this suggests the the the test error would be 36%. Therefore, logistic regression should be used since its test error rate of 30% is lower than that of the the alternative method which is 36%.**
+
+## Problem 10 
+
+### a. 
+
+```{r Weekly, echo=TRUE, eval=TRUE}
+
+
+load("/Users/curikim/Downloads/ISLR 2/data/Weekly.rda")
+
+summary(Weekly)
+plot(Weekly)
+
+```
+
+**There is an association between year and volume.**
+
+### b. 
+
+```{r Weekly2, echo=TRUE, eval=TRUE}
+
+new_Weekly <- Weekly 
+new_Weekly$Today <- NULL
+new_Weekly$Year <- NULL
+
+new_Weekly_lr <- glm(Direction~ ., data= new_Weekly, family=binomial)
+summary(new_Weekly_lr)
+
+
+```
+
+**Only lag2 is statistically significant.**
+
+### c. 
+
+```{r Weekly3, echo=TRUE, eval=TRUE}
+
+new_Weekly_P=predict (new_Weekly_lr,type="response")
+new_Weekly_Pd=rep("Down" ,length(new_Weekly_P))
+new_Weekly_Pd[new_Weekly_P > .5]=" Up"
+table(new_Weekly_Pd, new_Weekly$Direction)
+
+(54+557)/1089
+54/(54+48)
+557/(557+430)
+
+```
+
+**The total percentage that the prediction is correct is 56.11%.
+The prediction is correct 52.94% of the time when the market is down and 56.43% when the market is up.**
+
+### d.  
+
+```{r Weekly4, echo=TRUE, eval=TRUE}
+
+Weekly_train <- subset(Weekly, Year <= 2008)
+Weekly_train_lr <- glm(Direction~Lag2, data=Weekly_train, family=binomial)
+summary(Weekly_train_lr)
+
+Weekly_train_2 <- subset(Weekly, Year > 2008)
+Weekly_train_2_lr <- glm(Direction~Lag2, data=Weekly_train_2, family=binomial)
+summary(Weekly_train_2_lr)
+
+new_Weekly_trainP_2=predict (Weekly_train_2_lr,type="response")
+new_Weekly_trainPd_2=rep("Down" ,length(new_Weekly_trainP_2))
+new_Weekly_trainPd_2[new_Weekly_trainP_2 > .5]=" Up"
+table(new_Weekly_trainPd_2, Weekly_train_2$Direction)
+
+(57+8)/(35+57+12)
+```
+
+**Overall correct prediction is 62.5%.**
+
+### e. 
+
+```{r Weekly5, echo=TRUE, eval=TRUE}
+
+library(MASS)
+
+Weekly_lda <- lda(Direction ~ Lag2, data = Weekly_train)
+Weekly_lda
+
+Weekly_lda_2 <- lda(Direction ~ Lag2, data = Weekly_train_2)
+
+Weekly_ldaP=predict(Weekly_lda, Weekly_train_2)
+names(Weekly_ldaP)
+Weekly_ldaPd=Weekly_ldaP$class
+table(Weekly_ldaPd ,Weekly_train_2$Direction)
+
+(56+9)/(14+34+56)
+
+
+```
+
+**Overall correct prediction is 62.5%.**
+
+### f. 
+
+```{r Weekly6, echo=TRUE, eval=TRUE}
+
+library(MASS)
+
+Weekly_qda <- qda(Direction ~ Lag2, data = Weekly_train)
+Weekly_qda
+
+Weekly_qda_2 <- lda(Direction ~ Lag2, data = Weekly_train_2)
+
+Weekly_qdaP=predict(Weekly_qda, Weekly_train_2)
+names(Weekly_qdaP)
+Weekly_qdaPd=Weekly_qdaP$class
+table(Weekly_qdaPd ,Weekly_train_2$Direction)
+
+
+```
+
+**Overall correct prediction is 58.7%.** 
+
+### g. 
+
+```{r Weekly7, echo=TRUE, eval=TRUE} 
+
+library(class)
+
+Weekly_K_train=cbind(Weekly_train$Lag2)
+Weekly_K_test=cbind(Weekly_train_2$Lag2)
+Weekly_K_traindir = Weekly_train$Direction
+set.seed(1)
+Weekly_knn=knn(Weekly_K_train, Weekly_K_test ,Weekly_K_traindir ,k=1)
+table(Weekly_knn, Weekly_train_2$Direction)
+
+(21+31)/(21+31+30+22)
+
+```
+
+**Overall correct prediction is 50%.**
+
+
+### h.
+
+**Logistic regression and LDA**
+
+### i.
+
+```{r Weekly8, echo=TRUE, eval=TRUE}
+
+
+Weekly_train_lr25 <- glm(Direction~Lag2+Lag5, data=Weekly_train, family=binomial)
+summary(Weekly_train_lr25)
+
+
+Weekly_train_2_lr25 <- glm(Direction~Lag2+Lag5, data=Weekly_train_2, family=binomial)
+
+new_Weekly_trainP_25=predict (Weekly_train_2_lr25,type="response")
+new_Weekly_trainPd_25=rep("Down" ,length(new_Weekly_trainP_2))
+new_Weekly_trainPd_25[new_Weekly_trainP_25 > .5]=" Up"
+table(new_Weekly_trainPd_25, Weekly_train_2$Direction)
+
+(54+10)/(33+7+54+10)
+
+```
+
+**Combiding lag 2 and lag 5 for logistic regression leads to 61.5% accuracy.**
+
+```{r Weekly9, echo=TRUE, eval=TRUE}
+
+library(class)
+
+Weekly_knn3=knn(Weekly_K_train, Weekly_K_test ,Weekly_K_traindir ,k=3)
+table(Weekly_knn3, Weekly_train_2$Direction)
+
+(16+42)/(16+42+19+27)
+
+```
+
+**Setting K=3  leads to 55.8% accuracy, which is greater than when k=1.**
+
+
+## Problem 11
+
+### a. 
+
+```{r Auto7, echo=TRUE, eval=TRUE}
+
+mpg01 <- ifelse(Auto$mpg > median(Auto$mpg), 1, 0)
+Auto_mpg1 <- data.frame(Auto, mpg01)
+
+```
+
+###b. 
+
+```{r Auto8, echo=TRUE, eval=TRUE}
+
+mpg01 <- ifelse(Auto$mpg > median(Auto$mpg), 1, 0)
+Auto_mpg1 <- data.frame(Auto, mpg01)
+
+boxplot(displacement ~ mpg01, data = Auto_mpg1)
+boxplot(horsepower ~ mpg01, data = Auto_mpg1)
+boxplot(weight ~ mpg01, data = Auto_mpg1)
+boxplot(acceleration ~ mpg01, data = Auto_mpg1)
+boxplot(year ~ mpg01, data = Auto_mpg1)
+
+```
+
+**There seems to be association between mpg1 and displacement, weight, year, horsepower.**
+
+### c. 
+
+```{r Auto9, echo=TRUE, eval=TRUE}
+
+auto.train <- subset(Auto, year <= 76)
+auto.test  <- subset(Auto, year >76)
+
+
+```
+
+### d. 
+
+```{r Auto10, echo=TRUE, eval=TRUE}
+
+auto.train <- subset(Auto_mpg1, year <= 76)
+auto.test  <- subset(Auto_mpg1, year >76)
+
+lda.train = lda(mpg01~horsepower+displacement+weight,data=auto.train)
+
+
+
+lda.test.p=predict(lda.train, auto.test)
+lda.test.pd=lda.test.p$class
+table(lda.test.pd ,auto.test$mpg01)
+
+(14+8)/(14+8+110+46)
+
+
+```
+
+**The error rate is 0.1235.**
+
+### e. 
+
+```{r Auto11, echo=TRUE, eval=TRUE}
+
+
+qda.train = qda(mpg01~horsepower+displacement+weight,data=auto.train)
+
+
+
+qda.test.p=predict(qda.train, auto.test)
+qda.test.pd=qda.test.p$class
+table(qda.test.pd ,auto.test$mpg01)
+
+(6+19)/(6+19+105+48)
+
+
+```
+
+**Error rate  is 0.14.**
+
+### f. 
+
+```{r Auto12, echo=TRUE, eval=TRUE}
+
+
+logit.train = glm(mpg01~horsepower+displacement+weight,data=auto.train, family=binomial)
+
+logit.test.p=predict(logit.train, type="response")
+logit.test.pd=rep(0,  length(logit.test.p))
+logit.test.pd[logit.test.p > .5]= 1
+table(logit.test.pd, auto.train$mpg01)
+
+(12+6)/(12+6+66+130)
+
+
+
+
+```
+
+**Error rate is  0.084.** 
+
+
+### g. 
+
+```{r Auto13, echo=TRUE, eval=TRUE}
+
+library(class)
+
+auto.train.k=cbind(auto.train$horsepower & auto.train$displacement & auto.train$weight)
+auto.test.k=cbind(auto.test$horsepower & auto.test$displacement & auto.test$weight)
+auto.train.mpg01 = auto.train$mpg01
+set.seed(1)
+auto.knn=knn(auto.train.k, auto.test.k, auto.train.mpg01, k=1)
+table(auto.knn, auto.test$mpg01)
+
+(124)/(124+54)
+
+```
+
+**Error rate is 0.6966.**
+
+
+```{r Auto14, echo=TRUE, eval=TRUE}
+
+library(class)
+
+auto.train.k=cbind(auto.train$horsepower & auto.train$displacement & auto.train$weight)
+auto.test.k=cbind(auto.test$horsepower & auto.test$displacement & auto.test$weight)
+auto.train.mpg01 = auto.train$mpg01
+set.seed(1)
+auto.knn=knn(auto.train.k, auto.test.k, auto.train.mpg01, k=50)
+table(auto.knn, auto.test$mpg01)
+
+
+
+```
+
+**Error rate for k=50 is the same as when k=1.** 
+
+
