@@ -1,0 +1,487 @@
+---
+title: "Machine Learning HW 2"
+author: "Curi Kim"
+date: "2/5/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# ISL: 5.4
+
+## Problem 1
+
+$Var(aX+(1-a)Y)$
+$=Var(aX)+Var((1-a)Y)+2Cov(aX,(1-a)Y)$
+$=a^2Var(X)+(1-a)^2Var(Y)+2a(1-a)Cov(X,Y)$
+Convert Var to sigma:
+$\sigma_X^2*a^2+(1-a)^2*\sigma_Y^2+2a(1-a)*\sigma_{XY}$
+Take derivative of this: 
+$\sigma_X^2*2a+(-2)*(1-a)*\sigma_Y^2+(2-2a)*\sigma_{XY}=0$
+$\sigma_X^2*2a-2\sigma_Y^2+2\sigma_Y^2*a+2\sigma_{XY}-2a\sigma_{XY}=0$
+$(\sigma_X^2*2+2\sigma_Y^2-2\sigma_{XY})a-2\sigma_Y^2+2\sigma_{XY}=0$
+$(\sigma_Y^2*2-2\sigma_{XY})/(\sigma_X^2*2+2\sigma_Y^2-2\sigma_{XY})=a$
+$a=(\sigma_Y^2-\sigma_{XY})/(\sigma_Y^2-\sigma_{XY}+\sigma_X^2)$
+
+## Problem 3
+
+### a.
+
+**K-fold validation is when you take the sample and divide into K equal parts, where 1 becomes the validation and K-1 is the training sample. Each equal parts rotate to become training sample in the subsequent round. **
+
+### b. 
+
+**Compared to the validation set  approach, k-fold cross validation is less variable because each observation is both in the training set and the test set. Compared to the LOOCV, k-fold cross validation is more biased becasue you are using less data. However, LOOCV has highter variance. **
+
+## Problem 5
+
+### a. 
+
+```{r A, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(Default)
+logr= glm(default ~ income + balance, data=Default, family='binomial')
+summary(logr)
+
+```
+
+### b.
+
+```{r B, echo=TRUE, eval=TRUE}
+set.seed(1)
+train <- Default[sample(1:nrow(Default), 5000,  replace=FALSE),]
+dim(train)
+logr.train= glm(default ~ income + balance, data=train, family='binomial')
+summary(logr.train)
+train.post=predict(logr.train, data= Default[-train], type="response")
+train.prob=rep("No", 5000)
+train.prob[train.post >.5]="Yes"
+
+library(dplyr)
+Default1= anti_join(Default, train)
+mean(Default1$default!=train.prob)
+
+```
+
+**Error is 0.0476**
+
+### c.
+
+```{r C, echo=TRUE, eval=TRUE}
+set.seed(2)
+train <- Default[sample(1:nrow(Default), 5000,  replace=FALSE),]
+dim(train)
+logr.train= glm(default ~ income + balance, data=train, family='binomial')
+summary(logr.train)
+train.post=predict(logr.train, data= Default[-train], type="response")
+train.prob=rep("No", 5000)
+train.prob[train.post >.5]="Yes"
+
+library(dplyr)
+Default2= anti_join(Default, train)
+mean(Default2$default!=train.prob)
+
+```
+
+
+```{r D, echo=TRUE, eval=TRUE}
+set.seed(3)
+train <- Default[sample(1:nrow(Default), 5000,  replace=FALSE),]
+dim(train)
+logr.train= glm(default ~ income + balance, data=train, family='binomial')
+summary(logr.train)
+train.post=predict(logr.train, data= Default[-train], type="response")
+train.prob=rep("No", 5000)
+train.prob[train.post >.5]="Yes"
+
+library(dplyr)
+Default3= anti_join(Default, train)
+mean(Default3$default!=train.prob)
+
+```
+
+```{r E, echo=TRUE, eval=TRUE}
+set.seed(4)
+train <- Default[sample(1:nrow(Default), 5000,  replace=FALSE),]
+dim(train)
+logr.train= glm(default ~ income + balance, data=train, family='binomial')
+summary(logr.train)
+train.post=predict(logr.train, data= Default[-train], type="response")
+train.prob=rep("No", 5000)
+train.prob[train.post >.5]="Yes"
+
+library(dplyr)
+Default4= anti_join(Default, train)
+mean(Default4$default!=train.prob)
+
+```
+
+**Error is 0.0444, 0.0464, 0.0474 respectively.**
+
+### d.
+
+```{r F, echo=TRUE, eval=TRUE}
+set.seed(5)
+train <- Default[sample(1:nrow(Default), 5000,  replace=FALSE),]
+dim(train)
+logr.train= glm(default ~ income + balance + student, data=train, family="binomial")
+summary(logr.train)
+train.post=predict(logr.train, data= Default[-train], type="response")
+train.prob=rep("No", 5000)
+train.prob[train.post >.5]="Yes"
+
+library(dplyr)
+Default1= anti_join(Default, train)
+mean(Default1$default!=train.prob)
+
+```
+
+**The error was 0.0486, suggesting that adding "student" variable has no effect.** 
+
+## Problem 6
+
+### a. 
+
+```{r G, echo=TRUE, eval=TRUE}
+
+logr2 <- glm(default~ income + balance, data = Default, family = 'binomial')
+summary(logr2)
+
+```
+
+### b.
+
+```{r H, echo=TRUE, eval=TRUE}
+boot.fn = function(data,index)
+return(coef(glm(default~income+balance,data=data,subset=index,family='binomial')))
+boot.fn(Default,1:1000)
+```
+
+
+### c.
+
+```{r I, echo=TRUE, eval=TRUE}
+
+library(boot)
+boot(Default, boot.fn, 1000)
+
+```
+
+### d.
+
+**The standard error on 6.a is similar to the one obtained in bootstrap in 6.c.** 
+
+# ISL: 6.8
+
+## 1
+
+### a.
+
+**Best subset**
+
+### b. 
+
+**Best subset**
+
+### c. 
+
+**T, T, F, F, F**
+
+## Problem 8
+
+### a.
+
+```{r J, echo=TRUE, eval=TRUE}
+
+set.seed(4000)
+x= rnorm(100)
+noise= rnorm(100)
+
+
+```
+
+### b.
+
+```{r K, echo=TRUE, eval=TRUE}
+
+b0= 3
+b1= 4
+b2= 5
+b3= 6
+
+y= b0 + b1*x + b2*x^2 + b3*x^3 + noise
+
+```
+
+### c.
+
+
+```{r L, echo=TRUE, eval=TRUE}
+
+library(leaps)
+datax=  data.frame(y = y, x = x)
+regfit.full=regsubsets(y~ poly(x, degree=10, raw=TRUE) ,data=datax, nvmax=10)
+reg.summary= summary(regfit.full)
+
+par(mfrow=c(2,2))
+plot(reg.summary$adjr2 ,xlab="Number of Variables ", ylab="Adjusted RSq",type="l")
+points (8,reg.summary$adjr2 [8], col="orange",cex=2,pch =20)
+plot(reg.summary$cp ,xlab="Number of Variables ",ylab="cp", type="l")
+points (8,reg.summary$cp [8], col ="blue",cex=2,pch =20)
+plot(reg.summary$bic ,xlab="Number of Variables ",ylab="bic", type="l")
+points (3,reg.summary$bic [3],col="purple",cex=2,pch =20)
+
+which.min(reg.summary$cp)
+which.min(reg.summary$bic)
+which.max(reg.summary$adjr2)
+
+coef(regfit.full, 8)
+coef(regfit.full, 3)
+
+```
+
+### d.
+
+```{r M, echo=TRUE, eval=TRUE}
+
+regfit.fwd=regsubsets(y~ poly(x, degree=10, raw=TRUE) ,data=datax, nvmax=10, method ="forward")
+reg.summary.fwd= summary(regfit.fwd)
+
+par(mfrow=c(2,2))
+plot(reg.summary.fwd$adjr2 ,xlab="Number of Variables ", ylab="Adjusted RSq",type="l")
+points (9,reg.summary.fwd$adjr2 [9], col="orange",cex=2,pch =20)
+plot(reg.summary.fwd$cp ,xlab="Number of Variables ",ylab="cp", type="l")
+points (9,reg.summary.fwd$cp [9], col ="blue",cex=2,pch =20)
+plot(reg.summary.fwd$bic ,xlab="Number of Variables ",ylab="bic", type="l")
+points (3,reg.summary.fwd$bic [3],col="purple",cex=2,pch =20)
+
+which.min(reg.summary.fwd$cp)
+which.min(reg.summary.fwd$bic)
+which.max(reg.summary.fwd$adjr2)
+
+coef(regfit.fwd, 9)
+coef(regfit.fwd, 3)
+
+```
+
+
+```{r N, echo=TRUE, eval=TRUE}
+
+regfit.bwd=regsubsets(y~ poly(x, degree=10, raw=TRUE) ,data=datax, nvmax=10, method ="backward")
+reg.summary.bwd= summary(regfit.bwd)
+
+par(mfrow=c(2,2))
+plot(reg.summary.bwd$adjr2 ,xlab="Number of Variables ", ylab="Adjusted RSq",type="l")
+points (8,reg.summary.bwd$adjr2 [8], col="orange",cex=2,pch =20)
+plot(reg.summary.bwd$cp ,xlab="Number of Variables ",ylab="cp", type="l")
+points (8,reg.summary.bwd$cp [8], col ="blue",cex=2,pch =20)
+plot(reg.summary.bwd$bic ,xlab="Number of Variables ",ylab="bic", type="l")
+points (8,reg.summary.bwd$bic [8],col="purple",cex=2,pch =20)
+
+which.min(reg.summary.bwd$cp)
+which.min(reg.summary.bwd$bic)
+which.max(reg.summary.bwd$adjr2)
+
+coef(regfit.bwd, 8)
+
+```
+
+Forward correctly predicts while backward doesn't. Using  subset selection did not correctly predict the coefficients. 
+
+### e.
+
+```{r O, echo=TRUE, eval=TRUE}
+
+library(glmnet)
+set.seed(1000)
+xlasso=model.matrix(y~ poly(x, degree=10, raw=TRUE))[,-1]
+lasso.mod=glmnet(xlasso, y,alpha=1)
+plot(lasso.mod)
+cv.lasso.mod=cv.glmnet(xlasso, y,alpha=1)
+plot(cv.lasso.mod)
+bestlam =cv.lasso.mod$lambda.min
+bestlam
+lasso.coef=predict(lasso.mod ,type="coefficients", s= bestlam)
+lasso.coef
+
+```
+
+**Lasso closely predicted 3, 4, 5, 6.**
+
+### f.
+
+```{r P, echo=TRUE, eval=TRUE}
+
+set.seed(5000)
+x= rnorm(100)
+noise= rnorm(100)
+
+b0= 1
+b7= 9
+
+y= b0 + b7*x^7 + noise
+data2=data.frame(y=y,x=x)
+
+regfit.full1=regsubsets(y~ poly(x, degree=10, raw=TRUE) ,data=data2, nvmax=10)
+reg.summary1= summary(regfit.full1)
+
+par(mfrow=c(2,2))
+plot(reg.summary1$adjr2 ,xlab="Number of Variables ", ylab="Adjusted RSq",type="l")
+points (4,reg.summary1$adjr2 [4], col="orange",cex=2,pch =20)
+plot(reg.summary1$cp ,xlab="Number of Variables ",ylab="cp", type="l")
+points (2,reg.summary1$cp [2], col ="blue",cex=2,pch =20)
+plot(reg.summary1$bic ,xlab="Number of Variables ",ylab="bic", type="l")
+points (2,reg.summary1$bic [2],col="purple",cex=2,pch =20)
+
+which.min(reg.summary1$cp)
+which.min(reg.summary1$bic)
+which.max(reg.summary1$adjr2)
+
+coef(regfit.full1, 4)
+coef(regfit.full1, 2)
+
+
+set.seed(4545)
+y= b0 + b7*x^7 + noise
+data2=data.frame(y=y,x=x)
+
+xlasso=model.matrix(y~ poly(x, degree=10, raw=TRUE))[,-1]
+lasso.mod=glmnet(xlasso, y, alpha=1)
+plot(lasso.mod)
+cv.lasso.mod=cv.glmnet(xlasso, y, alpha=1)
+plot(cv.lasso.mod)
+bestlam =cv.lasso.mod$lambda.min
+bestlam 
+lasso.coef=predict(lasso.mod ,type="coefficients", s= bestlam)
+lasso.coef
+
+
+
+```
+
+**Here, only bic predicts the correct model. The lasso predicts the b7, but not the intercept.**
+
+## Problem 9
+
+### a. 
+
+```{r Q, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+library(dplyr)
+attach(College)
+dim(College)
+
+train <- College[sample(1:nrow(College), 389,  replace=FALSE),]
+test <- anti_join(College, train)
+
+```
+
+### b.
+
+```{r R, echo=TRUE, eval=TRUE}
+attach(College)
+linear.model= glm(Apps~., data= train)
+summary(linear.model)
+
+lm.predict=predict(linear.model, data= test, type="response")
+lm.predict.error= mean((Apps -predict (linear.model ,test))^2)
+lm.predict.error
+
+```
+
+**The test error is 18516306.**  
+
+### c. 
+
+```{r S, echo=TRUE, eval=TRUE}
+library(glmnet)
+set.seed(9090)
+mod.mat.train=model.matrix(Apps~., data=train)[,-1]
+mod.mat.test=model.matrix(Apps~., data=test)[,-1]
+rr.train=glmnet(x= mod.mat.train, y= train$Apps, alpha=0)
+rr.test=glmnet(x= mod.mat.test, y= test$Apps, alpha=0)
+plot(rr.train)
+plot(rr.test)
+cv.rr.train= cv.glmnet(x= mod.mat.train, y= train$Apps, alpha=0)
+plot(cv.rr.train)
+bestlam=cv.rr.train$lambda.min
+bestlam
+train.coef= predict(rr.train, type="coefficients", s=bestlam)
+train.coef
+rr.predict= predict(rr.train, data=  test, newx= mod.mat.test)
+rr.predict.error=  mean(((rr.predict-test$Apps))^2)
+rr.predict.error
+
+
+```
+
+**Error is 11871679.**
+
+### d. 
+
+```{r T, echo=TRUE, eval=TRUE}
+library(glmnet)
+set.seed(7070)
+mod.mat.train2=model.matrix(Apps~., data=train)[,-1]
+mod.mat.test2=model.matrix(Apps~., data=test)[,-1]
+lasso.train=glmnet(x= mod.mat.train2, y= train$Apps, alpha=1)
+lasso.test=glmnet(x= mod.mat.test2, y= test$Apps, alpha=1)
+plot(lasso.train)
+plot(lasso.test)
+cv.lasso.train= cv.glmnet(x= mod.mat.train, y= train$Apps, alpha=1)
+plot(cv.lasso.train)
+bestlam2=cv.lasso.train$lambda.min
+bestlam2
+train.coef2= predict(lasso.train, type="coefficients", s=bestlam2)
+train.coef2
+lasso.predict= predict(lasso.train, data=train, newx= mod.mat.test2)
+lasso.predict.error=  mean(((lasso.predict-test$Apps)^2))
+lasso.predict.error
+
+```
+
+**Error is 3621244.**
+
+### e. 
+
+```{r U, echo=TRUE, eval=TRUE}
+library(pls)
+set.seed(1234)
+pcr.fit=pcr(Apps~., data=train , scale=TRUE,  validation ="CV")
+summary (pcr.fit)
+
+validationplot(pcr.fit, val.type= "MSEP")
+pcr.pred=predict (pcr.fit, test, ncomp =17)
+pcr.pred.error= mean((pcr.pred-test$Apps)^2)
+pcr.pred.error
+
+
+```
+
+**Test error is 1680367.**
+
+### f. 
+
+```{r V, echo=TRUE, eval=TRUE}
+library(pls)
+set.seed(1233)
+pls.fit=plsr(Apps~., data=train, scale=TRUE, validation ="CV")
+summary (pls.fit)
+validationplot(pls.fit, val.type="MSEP")
+pls.pred=predict (pls.fit, test,ncomp =17)
+pls.pred.error= mean((pls.pred-test$Apps)^2)
+pls.pred.error
+
+
+```
+
+**Test error is 1689368.**
+
+### g.
+
+**Based on the errors, PLS and PCR  had the lowest error.** 
+
+
