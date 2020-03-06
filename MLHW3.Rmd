@@ -1,0 +1,479 @@
+---
+title: "Machine Learning HW 3"
+author: "Curi Kim"
+date: "3/6/2020"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# ISL: 8.4
+
+## Problem 10
+
+### a. 
+
+```{r A, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(Hitters)
+
+hitters_new <- na.omit(Hitters)
+log_salary <- data.frame(log(hitters_new$Salary))
+hitters_log <- cbind(hitters_new, log_salary)
+
+```
+
+### b. 
+
+```{r B, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(Hitters)
+
+train= 1:200
+hitters_train= hitters_log[train ,]
+hitters_test= hitters_log[-train ,]
+
+```
+
+### c. 
+
+```{r C, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(Hitters)
+library(gbm)
+
+set.seed(1010)
+
+train= 1:200
+hitters_train= hitters_log[train ,]
+
+lamb= seq(from= 0.0001, to= 1, by= 0.02)
+train_mse= rep(NA,length(lamb))
+
+for (i in 1: length(lamb)){
+boost_hitters= gbm(log.hitters_new.Salary.~.,data= hitters_train, distribution= "gaussian", n.trees= 1000, interaction.depth= 4, shrinkage=lamb[i] )
+
+yhat_boost_train= predict(boost_hitters, hitters_train, n.trees= 1000)
+train_mse[i]= mean((yhat_boost_train - hitters_train$log.hitters_new.Salary.)^2)
+}
+
+plot(lamb, train_mse, xlab="Lambda", ylab= "MSE", main= "Lambda vs MSE on Training Set")
+
+```
+
+### d. 
+
+```{r D, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(Hitters)
+library(gbm)
+
+set.seed(1077)
+
+train= 1:200
+hitters_test= hitters_log[-train ,]
+
+lamb= seq(from= 0.0001, to= 1, by= 0.02)
+test_mse= rep(NA, length(lamb))
+
+for (i in 1:length(lamb)){
+boost_hitters= gbm(log.hitters_new.Salary.~.,data= hitters_train, distribution= "gaussian", n.trees= 1000, interaction.depth= 4, shrinkage=lamb[i] )
+
+yhat_boost_test= predict(boost_hitters, hitters_test, n.trees= 1000)
+test_mse[i]= mean((yhat_boost_test - hitters_test$log.hitters_new.Salary.)^2)
+}
+
+plot(lamb, test_mse, xlab="Lambda", ylab= "MSE", main= "Lambda vs MSE on Test Set")
+
+```
+
+### e. 
+
+```{r E, echo=TRUE, eval=TRUE}
+library(glmnet)
+linear.model= glm(log.hitters_new.Salary.~., data= hitters_train)
+lm.predict=predict(linear.model, hitters_test, type="response")
+lm.predict.error= mean((hitters_test$log.hitters_new.Salary.-lm.predict)^2)
+lm.predict.error
+
+```
+
+```{r F, echo=TRUE, eval=TRUE}
+
+library(glmnet)
+set.seed(70)
+mod.mat.train= model.matrix(log.hitters_new.Salary.~., data= hitters_train)
+mod.mat.test= model.matrix(log.hitters_new.Salary.~., data= hitters_test)
+lasso.train= glmnet(x= mod.mat.train, y= hitters_train$log.hitters_new.Salary., alpha= 1)
+cv.lasso.train= cv.glmnet(x= mod.mat.train, y= hitters_train$log.hitters_new.Salary., alpha=1)
+bestlam= cv.lasso.train$lambda.min
+train.coef= predict(lasso.train, type= "coefficients", s=0.01)
+lasso.predict= predict(lasso.train, s=0.01, newx= mod.mat.test)
+lasso.predict.error= mean((lasso.predict-hitters_test$log.hitters_new.Salary.)^2)
+lasso.predict.error 
+
+```
+
+**Error for linear model is 0.105 and error for lasso is 0.109**
+
+## f. 
+
+```{r GG, echo=TRUE, eval=TRUE}
+
+library(glmnet)
+set.seed(70)
+
+hitters_best= gbm(log.hitters_new.Salary.~.,data= hitters_train, distribution= "gaussian", n.trees= 1000, interaction.depth= 4, shrinkage=lamb[which.min(test_mse)])
+
+summary(hitters_best)
+
+```
+
+**CAtBat is the most important.**
+
+## g. 
+
+```{r G, echo=TRUE, eval=TRUE}
+
+library(randomForest)
+set.seed(80)
+
+hitters_bag= randomForest(log.hitters_new.Salary.~.,data= hitters_train, mtry= 20, importance= TRUE) 
+yhat_bag= predict(hitters_bag, newdata=hitters_test)
+bag_mse= mean((yhat_bag-hitters_test$log.hitters_new.Salary.)^2)
+bag_mse
+
+```
+
+**Error is 0.00017.**
+
+# ISL: 9.7
+
+## Problem 7
+
+### a. 
+
+```{r H, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+library(dplyr)
+attach(Auto)
+
+new_Auto= mutate(Auto, mpg_bin = ifelse(Auto$mpg>median(Auto$mpg), "1", "0"))
+new_Auto$mpg_bin = as.numeric(new_Auto$mpg_bin)
+new_Auto$mpg_bool [new_Auto$mpg_bin  == 1] <- "TRUE"
+new_Auto$mpg_bool [new_Auto$mpg_bin  == 0] <- "FALSE"
+new_Auto$mpg_bool= factor(new_Auto$mpg_bool)
+
+
+
+
+```
+
+### b. 
+
+```{r I, echo=TRUE, eval=TRUE}
+
+library(e1071)
+set.seed(10)
+
+tune.out.linear= tune(svm, mpg_bool~., data= new_Auto, kernel ="linear", ranges=list(cost=c(0.1,1,10,100,1000)))
+summary(tune.out.linear)
+
+```
+
+**Best parameter is when cost is 0.1.**
+
+### c. 
+
+```{r J, echo=TRUE, eval=TRUE}
+
+library(e1071)
+set.seed(10)
+
+tune.out.radial=tune(svm, mpg_bool~., data=new_Auto, kernel ="radial", ranges=list(cost=c(0.1,1,10,100,1000), gamma=c(0.5,1,2,3,4) ))
+summary(tune.out.radial)
+
+```
+
+```{r K, echo=TRUE, eval=TRUE}
+
+library(e1071)
+set.seed(10)
+
+tune.out.poly=tune(svm, mpg_bool~., data=new_Auto, kernel ="polynomial", ranges=list(cost=c(0.1,1,10,100,1000), degree=c(0.5,1,2,3,4) ))
+summary(tune.out.poly)
+
+```
+
+**For radial, the lowest error is when cost is 1 and gamma is 0.5. For polynomial, the lowest error is when cost is 10 and degree is 1. 
+
+### d. 
+
+```{r L, echo=TRUE, eval=TRUE}
+
+library(e1071)
+set.seed(47)
+
+plot(tune.out.linear$best.model, new_Auto, weight ~ acceleration)
+plot(tune.out.linear$best.model, new_Auto, horsepower ~ weight)
+plot(tune.out.linear$best.model, new_Auto, acceleration ~ horsepower)
+
+plot(tune.out.radial$best.model, new_Auto, weight ~ acceleration)
+plot(tune.out.radial$best.model, new_Auto, horsepower ~ weight)
+plot(tune.out.radial$best.model, new_Auto, acceleration ~ horsepower)
+
+
+plot(tune.out.poly$best.model, new_Auto, weight ~ acceleration)
+plot(tune.out.poly$best.model, new_Auto, horsepower ~ weight)
+plot(tune.out.poly$best.model, new_Auto, acceleration ~ horsepower)
+
+```
+
+
+## Problem 8
+
+### a. 
+
+```{r M, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(OJ)
+
+oj_train= OJ[sample(1:nrow(OJ), 800,  replace=FALSE),]
+oj_test= anti_join(OJ, oj_train)
+
+```
+
+### b. 
+
+```{r N, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(OJ)
+library(e1071)
+set.seed(5)
+
+oj_train_svm=svm(Purchase~., data=oj_train , kernel ="linear", cost=0.01, scale=FALSE)
+summary(oj_train_svm)
+
+```
+
+**Number of support vectors is 605, 304 of which belongs to level CH and 301 belongs to level MM.**
+
+## c. 
+
+```{r O, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(OJ)
+library(e1071)
+set.seed(5)
+
+yhat_train= predict(oj_train_svm, oj_train)
+table(oj_train$Purchase, yhat_train)
+error_oj_train= (4+254)/(4+254+47+495)
+error_oj_train
+
+```
+
+```{r P, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(OJ)
+library(e1071)
+set.seed(5)
+
+yhat_test= predict(oj_train_svm, oj_test)
+table(oj_test$Purchase, yhat_test)
+error_oj_test= (2+88)/(2+88+146+25)
+error_oj_test
+
+```
+
+**Error for training set is 0.3225. Error for test set is 0.3448.**
+
+## d. 
+
+```{r Q, echo=TRUE, eval=TRUE}
+
+library(e1071)
+set.seed(7)
+
+tune.out.oj=tune(svm, Purchase~., data=oj_train, kernel ="linear", ranges=list(cost=seq(from= 0.01, to= 10, by= 0.5)))
+summary(tune.out.oj)
+
+```
+
+**Optimal cost is 0.01.**
+
+### e. 
+
+```{r R, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(OJ)
+library(e1071)
+set.seed(6)
+
+oj_best_cost=svm(Purchase~., data=oj_train , kernel ="linear", cost=0.01, scale=FALSE)
+summary(oj_best_cost)
+yhat_best_train= predict(oj_best_cost, oj_train)
+table(oj_train$Purchase, yhat_best_train)
+oj_best_train= (4+254)/(4+254+495+47)
+oj_best_train
+
+```
+
+```{r S, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(OJ)
+library(e1071)
+set.seed(6)
+
+oj_best_cost=svm(Purchase~., data=oj_train , kernel ="linear", cost=0.01, scale=FALSE)
+yhat_best_test= predict(oj_best_cost, oj_test)
+table(oj_test$Purchase, yhat_best_test)
+oj_best_test= (2+88)/(2+88+146+25)
+oj_best_test
+
+```
+
+**Error for train is 0.3225, and error for test is 0.3448**
+
+# ISL: 10.7
+
+## Problem 8
+
+### a. 
+
+```{r T, echo=TRUE, eval=TRUE}
+
+library(ISLR)
+attach(USArrests)
+pr.out=prcomp(USArrests , scale=TRUE)
+pr.var=(pr.out$sdev)^2
+pve=pr.var/sum(pr.var)
+pve
+
+```
+
+### b. 
+
+```{r U, echo=TRUE, eval=TRUE}
+
+arrests_scale= scale(USArrests)
+a= apply(pr.out$x^2, 2, sum)
+b= apply(arrests_scale^2, 2, sum)
+c= sum(b)
+new_pve= a/c
+new_pve
+
+```
+
+## Problem 9
+
+### a. 
+
+```{r V, echo=TRUE, eval=TRUE}
+
+hc.complete =hclust(dist(USArrests), method="complete")
+plot(hc.complete ,main="Cluster Dendrogram ", cex=.9)
+
+```
+
+### b. 
+
+```{r W, echo=TRUE, eval=TRUE}
+
+clusters= cutree(hc.complete, 3)
+clusters
+
+```
+
+### c. 
+
+```{r X, echo=TRUE, eval=TRUE}
+
+USArrests_scale= scale(USArrests)
+hc.complete.scale =hclust(dist(USArrests_scale), method="complete")
+plot(hc.complete.scale, main="Cluster Dendrogram ", cex=.9)
+
+```
+
+### d. 
+
+```{r Y, echo=TRUE, eval=TRUE}
+
+clusters= cutree(hc.complete, 3)
+clusters
+
+clusters.scale= cutree(hc.complete.scale, 3)
+clusters.scale
+
+all.equal(clusters,clusters.scale)
+
+```
+
+**Scaling decreases the height of the dendrogram, and it changes the clustering. Variables should be scaled if the unit of the variables are different.**
+
+## Problem 11
+
+### a. 
+
+```{r Z, echo=TRUE, eval=TRUE}
+
+Ch10Ex11 <- read.csv("~/Desktop/Classes 3rd term/Machine learning/Ch10Ex11.csv", header=FALSE)
+genes= 1-cor(Ch10Ex11)
+
+hc.complete.gene =hclust(as.dist(genes), method="complete")
+plot(hc.complete.gene, main="Cluster Dendrogram", cex=.9)
+
+```
+
+### b. 
+
+```{r AA, echo=TRUE, eval=TRUE}
+
+genes= 1-cor(Ch10Ex11)
+hc.complete.gene =hclust(as.dist(genes), method="complete")
+plot(hc.complete.gene, main="Complete Linkage", cex=.9)
+
+hc.average.gene =hclust(as.dist(genes), method="average")
+plot(hc.average.gene, main="Average Linkage", cex=.9)
+
+hc.single.gene =hclust(as.dist(genes), method="single")
+plot(hc.single.gene, main="Single Linkage", cex=.9)
+
+```
+
+**Average linkage separates the samples into three group, suggesting that the results depend on the type of linkage used.**
+
+### c. 
+
+```{r BB, echo=TRUE, eval=TRUE}
+
+pr.out.genes=prcomp(genes, scale=TRUE)
+genes.rotatate= pr.out.genes$rotation
+genes.sum= apply(genes.rotatate, 1, sum)
+genes.order= order(genes, decreasing=TRUE)
+genes.order[1:5]
+
+```
+
+**Principal component analysis can tell us which genesdifferthe most. These genes include 791, 1220, 125, 164, and 417.**
+
+
+
+
